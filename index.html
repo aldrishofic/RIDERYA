@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#080b14" />
+  <title>Avatar Facial — Control por Voz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #080b14;
+      --bg-card: rgba(17, 24, 39, 0.78);
+      --bg-card-solid: #111827;
+      --border-glass: rgba(255, 255, 255, 0.1);
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --accent-secondary: #818cf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #111936 0%, var(--bg-deep) 65%);
+      color: var(--text-main);
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* Sistema de pantallas */
+    .screen {
+      display: none;
+      min-height: 100dvh;
+      width: 100%;
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ========== 1. LOGIN ========== */
+    #login-screen {
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 390px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .brand-header {
+      text-align: center;
+    }
+
+    .brand-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+
+    .brand-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 20%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .glass-card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+      margin-bottom: 1.25rem;
+    }
+
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 13px 44px 13px 16px;
+      font-size: 1rem;
+      color: var(--text-main);
+      background: rgba(8, 11, 20, 0.85);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.84rem;
+      margin-top: 0.65rem;
+      display: none;
+    }
+
+    .primary-btn {
+      width: 100%;
+      margin-top: 1.1rem;
+      padding: 13px 18px;
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: #080b14;
+      background: linear-gradient(135deg, var(--accent) 0%, #60a5fa 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.25);
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.35);
+    }
+
+    .primary-btn:disabled {
+      background: #1e293b;
+      color: #64748b;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      50% { transform: translateX(7px); }
+      75% { transform: translateX(-5px); }
+    }
+
+    .shake {
+      animation: shake 0.32s ease;
+    }
+
+    /* ========== 2. CONFIGURACIÓN ========== */
+    #setup-screen {
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .setup-wrapper {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .videos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+      margin-bottom: 1.1rem;
+    }
+
+    @media (max-width: 440px) {
+      .videos-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .slot-card {
+      background: rgba(8, 11, 20, 0.65);
+      border: 1px dashed rgba(148, 163, 184, 0.3);
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .slot-card.loaded {
+      border-style: solid;
+      border-color: rgba(34, 197, 94, 0.55);
+      background: rgba(34, 197, 94, 0.06);
+    }
+
+    .slot-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .slot-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .file-label:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .file-label input[type="file"] {
+      display: none;
+    }
+
+    .slot-status {
+      font-size: 0.75rem;
+      color: var(--success);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 1.1em;
+      margin-top: 2px;
+    }
+
+    .tips-box {
+      background: rgba(56, 189, 248, 0.07);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .tips-box strong {
+      display: block;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+      font-size: 0.82rem;
+    }
+
+    .tips-box ul {
+      padding-left: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    /* ========== 3. AVATAR FULLSCREEN ========== */
+    #avatar-screen {
+      background: #000;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .stage-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      height: 100dvh;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .avatar-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.28s ease-in-out;
+      pointer-events: none;
+    }
+
+    .avatar-video.active-video {
+      opacity: 1;
+    }
+
+    /* Top Header flotante */
+    .stage-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: max(14px, env(safe-area-inset-top)) 16px 14px;
+      background: linear-gradient(to bottom, rgba(8, 11, 20, 0.8) 0%, transparent 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 20;
+    }
+
+    .stage-title {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: rgba(17, 24, 39, 0.72);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-glass);
+      color: var(--text-main);
+      padding: 8px 11px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Badge de gesto activo */
+    .gesture-pill {
+      position: absolute;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(56, 189, 248, 0.2);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .gesture-pill.visible {
+      opacity: 1;
+    }
+
+    /* Overlay tocar para iniciar */
+    .tap-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 11, 20, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 30;
+      cursor: pointer;
+    }
+
+    .tap-circle {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #080b14;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    /* Panel inferior de controles */
+    .bottom-dock {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 16px max(18px, env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(8, 11, 20, 0.95) 45%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .voice-status-bar {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mic-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+    }
+
+    .mic-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .mic-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .mic-dot.listening {
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.65; }
+    }
+
+    .mic-toggle-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-glass);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .transcript-line {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .transcript-line span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .gesture-btn {
+      padding: 12px 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.2s, border-color 0.2s;
+    }
+
+    .gesture-btn:active {
+      transform: scale(0.96);
+    }
+
+    .gesture-btn.active-gesture {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--border-glass);
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== 1. PANTALLA DE INICIO DE SESIÓN ========== -->
+  <section id="login-screen" class="screen active">
+    <div class="auth-box">
+      <div class="brand-header">
+        <span class="brand-pill">Sistema Privado</span>
+        <h1 class="brand-title">Avatar Facial</h1>
+        <p class="brand-sub">Control interactivo por voz en tiempo real</p>
+      </div>
+
+      <div class="glass-card">
+        <h2>Iniciar Sesión</h2>
+        <p class="card-desc">Ingresa la contraseña de acceso para continuar.</p>
+
+        <form id="login-form">
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="password-input"
+              class="text-input"
+              placeholder="Contraseña..."
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" id="toggle-pass-btn" class="toggle-pass" aria-label="Mostrar contraseña">
+              👁️
+            </button>
+          </div>
+          <div id="login-error" class="error-msg">Contraseña incorrecta. Intenta de nuevo.</div>
+          <button type="submit" class="primary-btn">
+            <span>Ingresar</span>
+            <span>→</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2. PANTALLA DE CONFIGURACIÓN ========== -->
+  <section id="setup-screen" class="screen">
+    <div class="setup-wrapper">
+      <div class="brand-header">
+        <h1 class="brand-title">Configurar Avatar</h1>
+        <p class="brand-sub">Carga tus 4 videos cortos para comenzar</p>
+      </div>
+
+      <div class="glass-card">
+        <h2>Selecciona los 4 gestos</h2>
+        <p class="card-desc">
+          Cada video debe <strong>empezar y terminar en posición neutral</strong> para que el regreso al reposo sea natural.
+        </p>
+
+        <div class="videos-grid">
+          <div class="slot-card" id="card-idle">
+            <div class="slot-title"><span>1. Cara Neutral</span><span id="check-idle"></span></div>
+            <div class="slot-hint">Loop continuo de fondo</div>
+            <label class="file-label">
+              Elegir video
+              <input type="file" accept="video/*" data-slot="idle" />
+            </label>
+            <div class="slot-status" id="name-idle"></div>
+          </div>
+
+          <div class="slot-card" id="card-izquierda">
+            <div class="slot-title"><span>2. Izquierda</span><span id="check-izquierda"></span></div>
+            <div class="slot-hint">Comando: "Izquierda"</div>
+            <label class="file-label">
+              Elegir video
+              <input type="file" accept="video/*" data-slot="izquierda" />
+            </label>
+            <div class="slot-status" id="name-izquierda"></div>
+          </div>
+
+          <div class="slot-card" id="card-derecha">
+            <div class="slot-title"><span>3. Derecha</span><span id="check-derecha"></span></div>
+            <div class="slot-hint">Comando: "Derecha"</div>
+            <label class="file-label">
+              Elegir video
+              <input type="file" accept="video/*" data-slot="derecha" />
+            </label>
+            <div class="slot-status" id="name-derecha"></div>
+          </div>
+
+          <div class="slot-card" id="card-sonrisa">
+            <div class="slot-title"><span>4. Sonrisa</span><span id="check-sonrisa"></span></div>
+            <div class="slot-hint">Comando: "Sonrisa"</div>
+            <label class="file-label">
+              Elegir video
+              <input type="file" accept="video/*" data-slot="sonrisa" />
+            </label>
+            <div class="slot-status" id="name-sonrisa"></div>
+          </div>
+        </div>
+
+        <div class="tips-box">
+          <strong>Tips para mejores resultados:</strong>
+          <ul>
+            <li>Usa fondo liso e iluminación constante en los 4 clips.</li>
+            <li>Duración recomendada de 1 a 2 segundos por gesto.</li>
+            <li>El avatar volverá solo a Cara Neutral al terminar cada gesto.</li>
+          </ul>
+        </div>
+
+        <button id="start-btn" class="primary-btn" disabled>
+          <span id="start-btn-label">Carga los 4 videos para continuar</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 3. PANTALLA PRINCIPAL DEL AVATAR ========== -->
+  <section id="avatar-screen" class="screen">
+    <div class="stage-container">
+      <!-- Doble reproductor para fundido cruzado -->
+      <video id="video-a" class="avatar-video active-video" playsinline webkit-playsinline muted autoplay loop></video>
+      <video id="video-b" class="avatar-video" playsinline webkit-playsinline muted></video>
+
+      <!-- Overlay por si el navegador bloquea autoplay -->
+      <div id="tap-overlay" class="tap-overlay">
+        <div class="tap-circle">▶</div>
+        <p style="font-weight:600;">Toca para iniciar el avatar</p>
+      </div>
+
+      <!-- Barra superior flotante -->
+      <header class="stage-header">
+        <div class="stage-title">Avatar Facial</div>
+        <div class="header-actions">
+          <button id="back-setup-btn" class="icon-btn">⚙️ Videos</button>
+          <button id="logout-btn" class="icon-btn">🔒 Salir</button>
+        </div>
+      </header>
+
+      <!-- Etiqueta de gesto activo -->
+      <div id="gesture-pill" class="gesture-pill">NEUTRAL</div>
+
+      <!-- Controles inferiores flotantes -->
+      <div class="bottom-dock">
+        <div class="voice-status-bar">
+          <div class="mic-header">
+            <div class="mic-left">
+              <span id="mic-dot" class="mic-dot"></span>
+              <span id="mic-label">Micrófono listo</span>
+            </div>
+            <button type="button" id="mic-toggle-btn" class="mic-toggle-btn">Pausar voz</button>
+          </div>
+          <div class="transcript-line">
+            Escuchando: <span id="transcript-text">Di "Izquierda", "Derecha" o "Sonrisa"</span>
+          </div>
+        </div>
+
+        <div class="manual-grid">
+          <button type="button" class="gesture-btn" data-gesture="izquierda">Izquierda</button>
+          <button type="button" class="gesture-btn" data-gesture="derecha">Derecha</button>
+          <button type="button" class="gesture-btn" data-gesture="sonrisa">Sonrisa</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ========= CONFIGURACIÓN DE CONTRASEÑA =========
+    const PASSWORD_CORRECTA = "hola";
+
+    // Referencias de pantallas
+    const loginScreen = document.getElementById('login-screen');
+    const setupScreen = document.getElementById('setup-screen');
+    const avatarScreen = document.getElementById('avatar-screen');
+
+    function showScreen(target) {
+      [loginScreen, setupScreen, avatarScreen].forEach(s => s.classList.remove('active'));
+      target.classList.add('active');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ========= 1. LÓGICA DE LOGIN =========
+    const loginForm = document.getElementById('login-form');
+    const passwordInput = document.getElementById('password-input');
+    const loginError = document.getElementById('login-error');
+    const togglePassBtn = document.getElementById('toggle-pass-btn');
+
+    if (sessionStorage.getItem('avatar_auth_ok') === 'true') {
+      showScreen(setupScreen);
+    }
+
+    togglePassBtn.addEventListener('click', () => {
+      const isPass = passwordInput.type === 'password';
+      passwordInput.type = isPass ? 'text' : 'password';
+      togglePassBtn.textContent = isPass ? '🙈' : '👁️';
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (passwordInput.value.trim() === PASSWORD_CORRECTA) {
+        sessionStorage.setItem('avatar_auth_ok', 'true');
+        loginError.style.display = 'none';
+        passwordInput.value = '';
+        showScreen(setupScreen);
+      } else {
+        loginError.style.display = 'block';
+        passwordInput.classList.remove('shake');
+        void passwordInput.offsetWidth;
+        passwordInput.classList.add('shake');
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
+
+    // ========= 2. LÓGICA DE CARGA DE VIDEOS =========
+    const videoURLs = {
+      idle: null,
+      izquierda: null,
+      derecha: null,
+      sonrisa: null
+    };
+
+    const startBtn = document.getElementById('start-btn');
+    const startBtnLabel = document.getElementById('start-btn-label');
+
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const slot = e.target.dataset.slot;
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (videoURLs[slot]) URL.revokeObjectURL(videoURLs[slot]);
+        videoURLs[slot] = URL.createObjectURL(file);
+
+        document.getElementById(`card-${slot}`).classList.add('loaded');
+        document.getElementById(`check-${slot}`).textContent = '✓';
+        document.getElementById(`name-${slot}`).textContent = file.name;
+
+        const loadedCount = Object.values(videoURLs).filter(Boolean).length;
+        if (loadedCount === 4) {
+          startBtn.disabled = false;
+          startBtnLabel.textContent = 'Iniciar Avatar →';
+        } else {
+          startBtnLabel.textContent = `Faltan ${4 - loadedCount} video(s)...`;
+        }
+      });
+    });
+
+    // ========= 3. MOTOR DE VIDEO Y VOZ =========
+    let activeVid = document.getElementById('video-a');
+    let standbyVid = document.getElementById('video-b');
+    const tapOverlay = document.getElementById('tap-overlay');
+    const gesturePill = document.getElementById('gesture-pill');
+    const transcriptText = document.getElementById('transcript-text');
+    const micDot = document.getElementById('mic-dot');
+    const micLabel = document.getElementById('mic-label');
+    const micToggleBtn = document.getElementById('mic-toggle-btn');
+
+    let playSequenceId = 0;
+    let currentState = 'idle';
+    let recognition = null;
+    let micEnabled = false;
+
+    function playSlot(slot, loop = false) {
+      if (!videoURLs[slot]) return;
+      const seq = ++playSequenceId;
+      currentState = slot;
+
+      // Actualizar botones y badge
+      document.querySelectorAll('.gesture-btn').forEach(btn => {
+        btn.classList.toggle('active-gesture', btn.dataset.gesture === slot);
+      });
+
+      if (slot === 'idle') {
+        gesturePill.classList.remove('visible');
+      } else {
+        gesturePill.textContent = slot.toUpperCase();
+        gesturePill.classList.add('visible');
+      }
+
+      standbyVid.onended = null;
+      standbyVid.src = videoURLs[slot];
+      standbyVid.loop = loop;
+      standbyVid.muted = true;
+      standbyVid.currentTime = 0;
+
+      const promise = standbyVid.play();
+      if (promise !== undefined) {
+        promise.then(() => {
+          if (seq !== playSequenceId) return;
+          tapOverlay.style.display = 'none';
+
+          standbyVid.classList.add('active-video');
+          activeVid.classList.remove('active-video');
+
+          const prev = activeVid;
+          activeVid = standbyVid;
+          standbyVid = prev;
+
+          setTimeout(() => {
+            if (standbyVid !== activeVid) standbyVid.pause();
+          }, 300);
+
+          // Si es un gesto puntual, volver a Cara Neutral al terminar
+          if (!loop) {
+            activeVid.onended = () => {
+              if (seq === playSequenceId) {
+                playSlot('idle', true);
+              }
+            };
+          }
+        }).catch(() => {
+          tapOverlay.style.display = 'flex';
+        });
+      }
+    }
+
+    tapOverlay.addEventListener('click', () => {
+      playSlot('idle', true);
+      startVoice();
+    });
+
+    // Botones manuales
+    document.querySelectorAll('.gesture-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const gesture = btn.dataset.gesture;
+        playSlot(gesture, false);
+      });
+    });
+
+    // Reconocimiento de voz (Web Speech API)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function initVoice() {
+      if (!SpeechRecognition) {
+        micLabel.textContent = 'Voz no disponible (usa botones)';
+        micToggleBtn.style.display = 'none';
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'es-ES';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        micDot.classList.add('listening');
+        micLabel.textContent = 'Escuchando voz...';
+        micToggleBtn.textContent = 'Pausar voz';
+      };
+
+      recognition.onresult = (event) => {
+        const last = event.results[event.results.length - 1];
+        const text = last[0].transcript.toLowerCase().trim();
+        transcriptText.textContent = `"${text}"`;
+
+        if (last.isFinal) {
+          if (text.includes('izquierda')) {
+            playSlot('izquierda', false);
+          } else if (text.includes('derecha')) {
+            playSlot('derecha', false);
+          } else if (text.includes('sonrisa') || text.includes('sonríe') || text.includes('sonrie')) {
+            playSlot('sonrisa', false);
+          } else if (text.includes('quieto') || text.includes('neutral')) {
+            playSlot('idle', true);
+          }
+        }
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error === 'not-allowed') {
+          micEnabled = false;
+          micDot.classList.remove('listening');
+          micLabel.textContent = 'Permiso de micrófono denegado';
+          micToggleBtn.textContent = 'Activar voz';
+        }
+      };
+
+      recognition.onend = () => {
+        if (micEnabled && avatarScreen.classList.contains('active')) {
+          try { recognition.start(); } catch (_) {}
+        } else {
+          micDot.classList.remove('listening');
+          micLabel.textContent = 'Voz en pausa';
+          micToggleBtn.textContent = 'Activar voz';
+        }
+      };
+    }
+
+    function startVoice() {
+      if (!recognition) initVoice();
+      if (!recognition) return;
+      micEnabled = true;
+      try { recognition.start(); } catch (_) {}
+    }
+
+    function stopVoice() {
+      micEnabled = false;
+      if (recognition) {
+        try { recognition.stop(); } catch (_) {}
+      }
+      micDot.classList.remove('listening');
+    }
+
+    micToggleBtn.addEventListener('click', () => {
+      if (micEnabled) {
+        stopVoice();
+        micLabel.textContent = 'Voz en pausa';
+        micToggleBtn.textContent = 'Activar voz';
+      } else {
+        startVoice();
+      }
+    });
+
+    // Iniciar experiencia
+    startBtn.addEventListener('click', () => {
+      showScreen(avatarScreen);
+      playSlot('idle', true);
+      startVoice();
+      showToast('Avatar activo');
+    });
+
+    // Volver a cambiar videos
+    document.getElementById('back-setup-btn').addEventListener('click', () => {
+      stopVoice();
+      activeVid.pause();
+      standbyVid.pause();
+      showScreen(setupScreen);
+    });
+
+    // Cerrar sesión / Bloquear
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      stopVoice();
+      activeVid.pause();
+      standbyVid.pause();
+      sessionStorage.removeItem('avatar_auth_ok');
+      showScreen(loginScreen);
+    });
+  </script>
+</body>
+</html>
